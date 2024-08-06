@@ -1,0 +1,44 @@
+[project]
+name = "stbl"
+version = "0.1.0"
+description = "A package including command-line utilities to parse *.stbl files for modding game: The Sims."
+requires-python = ">=3.10,<3.14"
+authors = [
+    { name = "Garrett HE", email = "garrett.he@outlook.com" }
+]
+readme = "README.md"
+license = { text = "BSD-3-Clause" }
+keywords = ["the-sims", "game", "stbl"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "click (>=8.1.8,<9.0.0)",
+]
+
+[project.urls]
+homepage = "https://github.com/garrett-he/python-stbl"
+repository = "https://github.com/garrett-he/python-stbl.git"
+changelog = "https://github.com/garrett-he/python-stbl/blob/main/CHANGELOG.md"
+
+[project.scripts]
+stbl = "stbl.__cli__:main"
+
+[tool.poetry.group.dev.dependencies]
+chance = "^0.110"
+cython = "^3.0.11"
+pre-commit = "^4.1.0"
+pyinstaller = "^6.11.1"
+pylint = "^3.3.3"
+pytest = "^8.3.4"
+pytest-cov = "^6.0.0"
+tox = "^4.23.2"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
