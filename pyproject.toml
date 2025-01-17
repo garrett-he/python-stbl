@@ -48,6 +48,6 @@ build-backend = "pdm.backend"
 distribution = true
 
 [tool.pdm.scripts]
-test = "pytest"
+test = "pytest --cov=src --cov-report=term-missing"
 lint = "pylint src/ tests/"
 build = "python build.py"

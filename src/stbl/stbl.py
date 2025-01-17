@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from functools import reduce
 from struct import pack, unpack
+from typing import List, BinaryIO
 
 
 @dataclass
@@ -20,21 +21,23 @@ class STBLEntry:
 
 class STBLFile:
     header: STBLHeader
-    entries: list
+    entries: List[STBLEntry]
 
     @staticmethod
-    def parse_header(f):
+    def parse_header(f: BinaryIO) -> STBLHeader:
         f.seek(0)
+
         data = unpack('<4schI6sI', f.read(21))
+
         return STBLHeader(
             signature=data[0],
-            version=data[1],
+            version=int.from_bytes(data[1]),
             entry_num=data[3],
             checksum=data[5]
         )
 
     @staticmethod
-    def parse_entries(f):
+    def parse_entries(f: BinaryIO) -> List[STBLEntry]:
         entries = []
 
         f.seek(21)
@@ -59,12 +62,12 @@ class STBLFile:
     def __init__(self):
         self.entries = []
 
-    def read(self, filename):
+    def read(self, filename: str):
         with open(filename, 'rb') as fp:
             self.header = STBLFile.parse_header(fp)
             self.entries = STBLFile.parse_entries(fp)
 
-    def write(self, filename):
+    def write(self, filename: str):
         with open(filename, 'wb') as fp:
             fp.write(pack('<4schIihI', b'STBL', b'\x05', 0, len(self.entries), 0, 0, self.calculate_checksum()))
 
@@ -72,25 +75,16 @@ class STBLFile:
                 fp.write(pack('<IcH', entry.instance_id, b'\x00', entry.length))
                 fp.write(bytes(entry.text, 'utf-8'))
 
-    def calculate_checksum(self):
+    def calculate_checksum(self) -> int:
         return reduce(lambda value, entry: value + entry.length, self.entries, 0) + len(self.entries)
 
-    def validate(self):
+    def validate(self) -> bool:
         result = self.header.signature == b'STBL'
-        result = result and self.header.version == b'\x05'
+        result = result and self.header.version == 5
         result = result and self.header.entry_num == len(self.entries)
-
         result = result and self.header.checksum == self.calculate_checksum()
 
         return result
 
-    def find_entry(self, instance_id):
-        result = list(filter(lambda e: e.instance_id == instance_id, self.entries))
-
-        if len(result) > 1:
-            raise ValueError(f'Instance ID "{instance_id}" is not unique.')
-
-        if len(result) == 1:
-            return result[0]
-
-        return None
+    def find_entries(self, instance_id: int) -> List[STBLEntry]:
+        return list(filter(lambda e: e.instance_id == instance_id, self.entries))

@@ -1,6 +1,6 @@
 from click.testing import CliRunner
 
-from stbl import __version__
+from stbl.__about__ import __version__
 from stbl.__cli__ import main
 
 
