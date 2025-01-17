@@ -50,7 +50,7 @@ class STBLFile:
                 STBLEntry(
                     instance_id=data[0],
                     length=data[2],
-                    text=(unpack('%ds' % data[2], f.read(data[2]))[0]).decode('utf-8')
+                    text=(unpack(f'{data[2]}s', f.read(data[2]))[0]).decode('utf-8')
                 )
             )
 
@@ -60,22 +60,17 @@ class STBLFile:
         self.entries = []
 
     def read(self, filename):
-        f = open(filename, 'rb')
-
-        self.header = STBLFile.parse_header(f)
-        self.entries = STBLFile.parse_entries(f)
-
-        f.close()
+        with open(filename, 'rb') as fp:
+            self.header = STBLFile.parse_header(fp)
+            self.entries = STBLFile.parse_entries(fp)
 
     def write(self, filename):
-        f = open(filename, 'wb')
-        f.write(pack('<4schIihI', b'STBL', b'\x05', 0, len(self.entries), 0, 0, self.calculate_checksum()))
+        with open(filename, 'wb') as fp:
+            fp.write(pack('<4schIihI', b'STBL', b'\x05', 0, len(self.entries), 0, 0, self.calculate_checksum()))
 
-        for entry in self.entries:
-            f.write(pack('<IcH', entry.instance_id, b'\x00', entry.length))
-            f.write(bytes(entry.text, 'utf-8'))
-
-        f.close()
+            for entry in self.entries:
+                fp.write(pack('<IcH', entry.instance_id, b'\x00', entry.length))
+                fp.write(bytes(entry.text, 'utf-8'))
 
     def calculate_checksum(self):
         return reduce(lambda value, entry: value + entry.length, self.entries, 0) + len(self.entries)
@@ -93,9 +88,9 @@ class STBLFile:
         result = list(filter(lambda e: e.instance_id == instance_id, self.entries))
 
         if len(result) > 1:
-            raise Exception('Instance ID "%d" is not unique.' % instance_id)
+            raise ValueError(f'Instance ID "{instance_id}" is not unique.')
 
         if len(result) == 1:
             return result[0]
-        else:
-            return None
+
+        return None
