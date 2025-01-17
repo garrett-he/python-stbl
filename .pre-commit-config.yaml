@@ -22,14 +22,14 @@ repos:
     hooks:
       - id: pytest
         name: pytest
-        entry: poetry run pytest
+        entry: pdm run test
         language: system
         always_run: true
         pass_filenames: false
 
       - id: pylint
         name: pylint
-        entry: poetry run pylint src/ tests/
+        entry: pdm run lint
         language: system
         always_run: true
         pass_filenames: false
